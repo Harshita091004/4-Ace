@@ -1,0 +1,264 @@
+.financial-literacy {
+  padding: 20px;
+}
+
+.financial-literacy h1 {
+  font-size: 32px;
+  margin-bottom: 30px;
+  color: #333;
+}
+
+.progress-card {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 30px;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+  margin-bottom: 30px;
+}
+
+.progress-info h3 {
+  margin-bottom: 15px;
+  font-size: 18px;
+}
+
+.progress-info p {
+  margin: 8px 0;
+  font-size: 16px;
+}
+
+.badges {
+  margin-top: 15px;
+  padding-top: 15px;
+  border-top: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.badges h4 {
+  margin-bottom: 10px;
+}
+
+.badge {
+  display: inline-block;
+  background: rgba(255, 255, 255, 0.2);
+  padding: 5px 12px;
+  border-radius: 20px;
+  margin-right: 10px;
+  margin-bottom: 5px;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.content-sections {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+  gap: 30px;
+  margin-bottom: 30px;
+}
+
+.section {
+  background: white;
+  padding: 30px;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.section h2 {
+  margin-bottom: 10px;
+  color: #333;
+  font-size: 22px;
+}
+
+.section > p {
+  color: #666;
+  margin-bottom: 20px;
+}
+
+.quiz-list,
+.articles-list {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.quiz-card,
+.article-card {
+  background: #f8f9fa;
+  padding: 15px;
+  border-radius: 5px;
+  border-left: 4px solid #667eea;
+  transition: transform 0.3s ease;
+}
+
+.quiz-card:hover,
+.article-card:hover {
+  transform: translateX(5px);
+}
+
+.quiz-card h3,
+.article-card h3 {
+  margin-bottom: 8px;
+  color: #333;
+}
+
+.quiz-card p,
+.article-card p {
+  color: #666;
+  font-size: 14px;
+  margin: 5px 0;
+}
+
+.category {
+  font-size: 12px;
+  color: #667eea;
+  font-weight: 600;
+}
+
+.preview {
+  color: #666;
+  font-size: 13px;
+  line-height: 1.4;
+  margin: 10px 0;
+}
+
+.quiz-card button,
+.article-card button {
+  background: #667eea;
+  color: white;
+  padding: 8px 16px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  margin-top: 10px;
+}
+
+.quiz-card button:hover,
+.article-card button:hover {
+  background: #764ba2;
+}
+
+.financial-tips {
+  background: white;
+  padding: 30px;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  margin-bottom: 30px;
+}
+
+.financial-tips h2 {
+  margin-bottom: 20px;
+  color: #333;
+}
+
+.financial-tips ul {
+  list-style-position: inside;
+  line-height: 2.2;
+}
+
+.financial-tips li {
+  color: #555;
+  margin-bottom: 10px;
+}
+
+.financial-tips strong {
+  color: #667eea;
+}
+
+/* Quiz Container */
+.quiz-container {
+  background: white;
+  padding: 40px;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.quiz-header {
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.quiz-header h2 {
+  color: #333;
+  margin-bottom: 10px;
+}
+
+.quiz-header p {
+  color: #666;
+  font-size: 14px;
+}
+
+.quiz-content {
+  margin-bottom: 30px;
+}
+
+.quiz-content h3 {
+  color: #333;
+  margin-bottom: 20px;
+  font-size: 18px;
+}
+
+.options {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.option {
+  background: #f8f9fa;
+  padding: 15px;
+  border: 2px solid #ddd;
+  border-radius: 5px;
+  text-align: left;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 16px;
+  color: #333;
+}
+
+.option:hover {
+  background: #e9ecef;
+  border-color: #667eea;
+}
+
+.option.selected {
+  background: #667eea;
+  color: white;
+  border-color: #667eea;
+}
+
+.quiz-navigation {
+  display: flex;
+  justify-content: space-between;
+  gap: 15px;
+}
+
+.quiz-navigation button {
+  flex: 1;
+  padding: 12px;
+  background: #667eea;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.quiz-navigation button:hover {
+  background: #764ba2;
+}
+
+.quiz-navigation button:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+}
+
+.submit-btn {
+  background: #28a745 !important;
+}
+
+.submit-btn:hover {
+  background: #218838 !important;
+}

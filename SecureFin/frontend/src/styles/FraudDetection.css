@@ -1,0 +1,138 @@
+.fraud-detection {
+  padding: 20px;
+}
+
+.fraud-detection h1 {
+  font-size: 32px;
+  margin-bottom: 30px;
+  color: #333;
+}
+
+.alerts-summary {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 20px;
+  margin-bottom: 30px;
+}
+
+.alert-card {
+  background: white;
+  padding: 30px;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  border-left: 5px solid #ffc107;
+  text-align: center;
+}
+
+.alert-card.danger {
+  border-left-color: #dc3545;
+}
+
+.alert-card h3 {
+  color: #666;
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 10px;
+}
+
+.alert-card .count {
+  font-size: 36px;
+  font-weight: 700;
+  color: #ffc107;
+}
+
+.alert-card.danger .count {
+  color: #dc3545;
+}
+
+.alerts-section,
+.flagged-section {
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  margin-bottom: 30px;
+}
+
+.alerts-section h2,
+.flagged-section h2 {
+  margin-bottom: 20px;
+  color: #333;
+}
+
+.alerts-table,
+.flagged-table {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.alerts-table table,
+.flagged-table table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.alerts-table th,
+.flagged-table th {
+  background-color: #f8f9fa;
+  padding: 12px;
+  font-weight: 600;
+  text-align: left;
+}
+
+.alerts-table td,
+.flagged-table td {
+  padding: 12px;
+  border-bottom: 1px solid #ddd;
+}
+
+.report-btn {
+  padding: 8px 12px;
+  background-color: #dc3545;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.report-btn:hover {
+  background-color: #c82333;
+}
+
+.flagged {
+  background-color: #fff3cd !important;
+}
+
+.no-data {
+  text-align: center;
+  color: #666;
+  padding: 30px;
+  font-size: 16px;
+}
+
+.security-tips {
+  background: white;
+  padding: 30px;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.security-tips h2 {
+  margin-bottom: 20px;
+  color: #333;
+}
+
+.security-tips ul {
+  list-style-position: inside;
+  line-height: 2;
+}
+
+.security-tips li {
+  color: #555;
+}
+
+.security-tips strong {
+  color: #333;
+}
