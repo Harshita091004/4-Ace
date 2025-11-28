@@ -62,6 +62,11 @@ app.use('/api/wallet', require('./routes/wallet'));
 app.use('/api/fraud', require('./routes/fraud'));
 app.use('/api/blockchain', require('./routes/blockchain'));
 app.use('/api/literacy', require('./routes/literacy'));
+app.use('/api/debt', require('./routes/debt'));
+app.use('/api/income', require('./routes/income'));
+app.use('/api/prediction', require('./routes/prediction'));
+app.use('/api/2fa', require('./routes/twofa'));
+app.use('/api/i18n', require('./routes/i18n'));
 
 // Health check
 app.get('/health', (req, res) => {
@@ -74,7 +79,7 @@ app.use((err, req, res, next) => {
   res.status(500).json({ error: err.message });
 });
 
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 5001;
 app.listen(PORT, () => {
   console.log(`SecureFin Backend running on port ${PORT}`);
 });
