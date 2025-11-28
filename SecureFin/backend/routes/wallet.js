@@ -46,7 +46,31 @@ router.get('/info', authenticateToken, async (req, res) => {
       return res.status(404).json({ error: 'Wallet not found' });
     }
 
-    res.json(wallet);
+    // Fetch transaction history for this wallet
+    const transactions = await Transaction.find({
+      $or: [
+        { fromUserId: req.user.userId },
+        { toUserId: req.user.userId }
+      ]
+    })
+    .sort({ createdAt: -1 })
+    .limit(50)
+    .lean();
+
+    // Build response with transaction history
+    const walletData = wallet.toObject();
+    walletData.transactionHistory = transactions.map(tx => ({
+      transactionId: tx._id,
+      amount: tx.amount,
+      type: tx.type,
+      timestamp: tx.createdAt,
+      description: tx.description,
+      status: tx.status,
+      fromUserId: tx.fromUserId,
+      toUserId: tx.toUserId,
+    }));
+
+    res.json(walletData);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -61,6 +85,11 @@ router.post('/transfer', authenticateToken, async (req, res) => {
       return res.status(400).json({ error: 'Recipient address and amount are required' });
     }
 
+    const numAmount = parseFloat(amount);
+    if (numAmount <= 0) {
+      return res.status(400).json({ error: 'Amount must be greater than 0' });
+    }
+
     const fromWallet = await Wallet.findOne({ userId: req.user.userId });
     const toWallet = await Wallet.findOne({ walletAddress: toWalletAddress });
 
@@ -72,24 +101,26 @@ router.post('/transfer', authenticateToken, async (req, res) => {
       return res.status(404).json({ error: 'Recipient wallet not found' });
     }
 
-    if (fromWallet.balance < amount) {
-      return res.status(400).json({ error: 'Insufficient balance' });
+    if (fromWallet.balance < numAmount) {
+      return res.status(400).json({ error: `Insufficient balance. You have ₹${fromWallet.balance} but trying to send ₹${numAmount}` });
     }
 
-    // Create transaction
+    // Create transaction record
     const transaction = new Transaction({
       fromUserId: req.user.userId,
       toUserId: toWallet.userId,
-      amount,
+      amount: numAmount,
       type: 'transfer',
-      description,
+      description: description || 'P2P Transfer',
       status: 'confirmed',
       confirmedAt: new Date(),
     });
 
     // Update wallets
-    fromWallet.balance -= amount;
-    toWallet.balance += amount;
+    fromWallet.balance -= numAmount;
+    toWallet.balance += numAmount;
+    fromWallet.updatedAt = new Date();
+    toWallet.updatedAt = new Date();
 
     await transaction.save();
     await fromWallet.save();
@@ -98,6 +129,14 @@ router.post('/transfer', authenticateToken, async (req, res) => {
     res.status(201).json({
       transactionId: transaction._id,
       status: 'Transfer successful',
+      fromBalance: fromWallet.balance,
+      toBalance: toWallet.balance,
+      transaction: {
+        amount: numAmount,
+        type: 'transfer',
+        timestamp: transaction.createdAt,
+        description: transaction.description,
+      }
     });
   } catch (error) {
     res.status(500).json({ error: error.message });

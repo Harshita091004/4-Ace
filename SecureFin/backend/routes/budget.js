@@ -47,6 +47,7 @@ router.post('/set', authenticateToken, async (req, res) => {
 // Get budgets with suggestions
 router.get('/all', authenticateToken, async (req, res) => {
   try {
+    const mongoose = require('mongoose');
     const currentMonth = new Date().getMonth() + 1;
     const currentYear = new Date().getFullYear();
 
@@ -64,7 +65,7 @@ router.get('/all', authenticateToken, async (req, res) => {
       const spent = await Expense.aggregate([
         {
           $match: {
-            userId: require('mongoose').Types.ObjectId(req.user.userId),
+            userId: new mongoose.Types.ObjectId(req.user.userId),
             category: budget.category,
             date: { $gte: startDate, $lte: endDate },
           }
@@ -75,13 +76,14 @@ router.get('/all', authenticateToken, async (req, res) => {
       ]);
 
       budget.spent = spent.length > 0 ? spent[0].total : 0;
-
-      // Generate AI suggestions
+      
+      // Clear old suggestions and generate new AI suggestions
+      budget.suggestions = [];
       if (budget.spent > budget.limit * 0.8) {
         budget.suggestions.push({
           title: `${budget.category} spending alert`,
-          description: `You've spent ${((budget.spent / budget.limit) * 100).toFixed(0)}% of your ${budget.category} budget.`,
-          potentialSavings: budget.spent - budget.limit,
+          description: `You've spent ₹${budget.spent.toFixed(0)} out of ₹${budget.limit} (${((budget.spent / budget.limit) * 100).toFixed(0)}%) of your ${budget.category} budget.`,
+          potentialSavings: Math.max(0, budget.spent - budget.limit),
           timestamp: new Date(),
         });
       }

@@ -10,9 +10,14 @@ function Wallet() {
     description: '',
   });
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
 
   useEffect(() => {
     fetchWallet();
+    // Auto-refresh wallet every 5 seconds for real-time updates
+    const interval = setInterval(fetchWallet, 5000);
+    return () => clearInterval(interval);
   }, []);
 
   const fetchWallet = async () => {
@@ -22,10 +27,15 @@ function Wallet() {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       setWallet(response.data);
+      setError('');
     } catch (error) {
       console.error('Error fetching wallet:', error);
-      // Create wallet if doesn't exist
-      createWallet();
+      if (error.response?.status === 404) {
+        // Wallet doesn't exist, create one
+        createWallet();
+      } else {
+        setError('Failed to load wallet');
+      }
     }
   };
 
@@ -36,8 +46,11 @@ function Wallet() {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       setWallet(response.data);
+      setSuccess('Wallet created successfully!');
+      setTimeout(() => setSuccess(''), 3000);
     } catch (error) {
       console.error('Error creating wallet:', error);
+      setError('Failed to create wallet');
     }
   };
 
@@ -52,44 +65,61 @@ function Wallet() {
   const handleTransfer = async (e) => {
     e.preventDefault();
     setLoading(true);
+    setError('');
+    setSuccess('');
 
     try {
       const token = localStorage.getItem('token');
-      await axios.post('http://localhost:5000/api/wallet/transfer', formData, {
+      const response = await axios.post('http://localhost:5000/api/wallet/transfer', formData, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
 
-      alert('Transfer successful!');
+      setSuccess(`Transfer successful! Sent ₹${formData.amount} to ${formData.toWalletAddress.slice(0, 10)}...`);
       setFormData({
         toWalletAddress: '',
         amount: '',
         description: '',
       });
-      fetchWallet();
+      
+      // Immediately refresh wallet to show new balance
+      await fetchWallet();
+      setTimeout(() => setSuccess(''), 3000);
     } catch (error) {
-      alert('Error: ' + error.response?.data?.error);
+      setError(error.response?.data?.error || 'Transfer failed');
     } finally {
       setLoading(false);
     }
   };
 
-  if (!wallet) return <div className="loading">Loading wallet...</div>;
+  if (!wallet) return <div className="loading">Creating/loading wallet...</div>;
 
   return (
     <div className="wallet">
-      <h1>Blockchain Wallet</h1>
+      <h1>Blockchain Wallet 🔐</h1>
+
+      {error && <div className="alert alert-error">{error}</div>}
+      {success && <div className="alert alert-success">{success}</div>}
 
       <div className="wallet-info">
         <div className="wallet-card">
           <h2>Your Wallet</h2>
           <div className="balance">
             <h3>Balance</h3>
-            <p className="balance-amount">₹{wallet.balance || 0}</p>
+            <p className="balance-amount">₹{(wallet.balance || 0).toFixed(2)}</p>
+            <p className="balance-status">Last updated: just now</p>
           </div>
           <div className="wallet-address">
             <h3>Wallet Address</h3>
             <p className="address">{wallet.walletAddress}</p>
-            <button onClick={() => navigator.clipboard.writeText(wallet.walletAddress)}>Copy</button>
+            <button 
+              className="copy-btn"
+              onClick={() => {
+                navigator.clipboard.writeText(wallet.walletAddress);
+                alert('Address copied!');
+              }}
+            >
+              📋 Copy Address
+            </button>
           </div>
         </div>
       </div>
@@ -97,31 +127,45 @@ function Wallet() {
       <div className="transfer-section">
         <h2>Send Money (P2P Transfer)</h2>
         <form onSubmit={handleTransfer}>
-          <input
-            type="text"
-            name="toWalletAddress"
-            placeholder="Recipient Wallet Address"
-            value={formData.toWalletAddress}
-            onChange={handleInputChange}
-            required
-          />
-          <input
-            type="number"
-            name="amount"
-            placeholder="Amount (₹)"
-            value={formData.amount}
-            onChange={handleInputChange}
-            required
-          />
-          <input
-            type="text"
-            name="description"
-            placeholder="Description (optional)"
-            value={formData.description}
-            onChange={handleInputChange}
-          />
-          <button type="submit" disabled={loading}>
-            {loading ? 'Sending...' : 'Send Money'}
+          <div className="form-group">
+            <label>Recipient Wallet Address</label>
+            <input
+              type="text"
+              name="toWalletAddress"
+              placeholder="0x..."
+              value={formData.toWalletAddress}
+              onChange={handleInputChange}
+              required
+            />
+          </div>
+          <div className="form-group">
+            <label>Amount (₹)</label>
+            <input
+              type="number"
+              name="amount"
+              placeholder="Enter amount"
+              value={formData.amount}
+              onChange={handleInputChange}
+              step="0.01"
+              min="0"
+              required
+            />
+            {wallet && formData.amount && parseFloat(formData.amount) > wallet.balance && (
+              <p className="warning">⚠️ Insufficient balance!</p>
+            )}
+          </div>
+          <div className="form-group">
+            <label>Description (Optional)</label>
+            <input
+              type="text"
+              name="description"
+              placeholder="What is this payment for?"
+              value={formData.description}
+              onChange={handleInputChange}
+            />
+          </div>
+          <button type="submit" disabled={loading || !formData.toWalletAddress || !formData.amount}>
+            {loading ? '⏳ Sending...' : '✓ Send Money'}
           </button>
         </form>
       </div>
@@ -129,27 +173,53 @@ function Wallet() {
       <div className="transaction-history">
         <h2>Transaction History</h2>
         {wallet.transactionHistory && wallet.transactionHistory.length > 0 ? (
-          <table>
-            <thead>
-              <tr>
-                <th>Type</th>
-                <th>Amount</th>
-                <th>Date</th>
-              </tr>
-            </thead>
-            <tbody>
-              {wallet.transactionHistory.map((tx, idx) => (
-                <tr key={idx}>
-                  <td>{tx.type}</td>
-                  <td>₹{tx.amount}</td>
-                  <td>{new Date(tx.timestamp).toLocaleString()}</td>
+          <div className="history-table-wrapper">
+            <table>
+              <thead>
+                <tr>
+                  <th>Type</th>
+                  <th>Amount</th>
+                  <th>Status</th>
+                  <th>Date & Time</th>
+                  <th>Description</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {wallet.transactionHistory.map((tx, idx) => {
+                  const isSent = tx.fromUserId === wallet.userId;
+                  const typeLabel = isSent ? '📤 Sent' : '📥 Received';
+                  return (
+                    <tr key={idx} className={isSent ? 'sent' : 'received'}>
+                      <td>{typeLabel}</td>
+                      <td className={isSent ? 'negative' : 'positive'}>
+                        {isSent ? '-' : '+'}₹{(tx.amount || 0).toFixed(2)}
+                      </td>
+                      <td>
+                        <span className={`status ${tx.status || 'confirmed'}`}>
+                          {tx.status === 'confirmed' ? '✓' : '⧗'} {tx.status || 'Confirmed'}
+                        </span>
+                      </td>
+                      <td>{new Date(tx.timestamp).toLocaleString()}</td>
+                      <td className="description">{tx.description || '-'}</td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
         ) : (
-          <p>No transactions yet</p>
+          <p className="no-transactions">No transactions yet. Start by receiving money or creating another wallet to transfer to!</p>
         )}
+      </div>
+
+      <div className="wallet-tips">
+        <h3>💡 Tips</h3>
+        <ul>
+          <li>Share your wallet address to receive money</li>
+          <li>Keep your private key secure</li>
+          <li>All transactions are recorded on blockchain</li>
+          <li>Wallet updates in real-time</li>
+        </ul>
       </div>
     </div>
   );

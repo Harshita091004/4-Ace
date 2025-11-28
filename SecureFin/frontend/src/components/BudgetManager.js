@@ -36,6 +36,12 @@ function BudgetManager() {
 
   const handleSetBudget = async (e) => {
     e.preventDefault();
+    
+    if (!formData.limit || formData.limit <= 0) {
+      alert('Please enter a valid budget limit');
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -44,14 +50,16 @@ function BudgetManager() {
         headers: { 'Authorization': `Bearer ${token}` }
       });
 
-      setBudgets([...budgets, response.data]);
+      // Refresh entire budget list after setting new budget
+      await fetchBudgets();
+      
       setFormData({
         category: 'food',
         limit: '',
       });
       alert('Budget set successfully!');
     } catch (error) {
-      alert('Error setting budget: ' + error.response?.data?.error);
+      alert('Error setting budget: ' + (error.response?.data?.error || error.message));
     } finally {
       setLoading(false);
     }
@@ -93,35 +101,41 @@ function BudgetManager() {
       </div>
 
       <div className="budgets-list">
-        <h2>Current Budgets</h2>
-        <div className="budget-cards">
-          {budgets.map((budget) => {
-            const percentage = (budget.spent / budget.limit) * 100;
-            const status = percentage > 80 ? 'critical' : percentage > 50 ? 'warning' : 'safe';
+        <h2>Current Budgets ({budgets.length})</h2>
+        {budgets.length === 0 ? (
+          <p className="no-budgets">No budgets set yet. Create your first budget above!</p>
+        ) : (
+          <div className="budget-cards">
+            {budgets.map((budget) => {
+              const spent = budget.spent || 0;
+              const percentage = budget.limit > 0 ? (spent / budget.limit) * 100 : 0;
+              const status = percentage > 80 ? 'critical' : percentage > 50 ? 'warning' : 'safe';
 
-            return (
-              <div key={budget._id} className={`budget-card ${status}`}>
-                <h3>{budget.category}</h3>
-                <p>Limit: ₹{budget.limit}</p>
-                <p>Spent: ₹{budget.spent || 0}</p>
-                <div className="progress-bar">
-                  <div
-                    className="progress-fill"
-                    style={{ width: `${Math.min(percentage, 100)}%` }}
-                  ></div>
-                </div>
-                <p>{percentage.toFixed(1)}% used</p>
-                {budget.suggestions && budget.suggestions.length > 0 && (
-                  <div className="suggestions">
-                    {budget.suggestions.map((suggestion, idx) => (
-                      <p key={idx} className="suggestion">{suggestion.description}</p>
-                    ))}
+              return (
+                <div key={budget._id} className={`budget-card ${status}`}>
+                  <h3>{budget.category.charAt(0).toUpperCase() + budget.category.slice(1)}</h3>
+                  <p className="limit">Limit: <strong>₹{budget.limit}</strong></p>
+                  <p className="spent">Spent: <strong>₹{spent.toFixed(0)}</strong></p>
+                  <div className="progress-bar">
+                    <div
+                      className="progress-fill"
+                      style={{ width: `${Math.min(percentage, 100)}%` }}
+                    ></div>
                   </div>
-                )}
-              </div>
-            );
-          })}
-        </div>
+                  <p className="percentage">{percentage.toFixed(1)}% used</p>
+                  {budget.suggestions && budget.suggestions.length > 0 && (
+                    <div className="suggestions">
+                      <p className="alert-title">⚠️ Alert</p>
+                      {budget.suggestions.map((suggestion, idx) => (
+                        <p key={idx} className="suggestion">{suggestion.description}</p>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        )}
       </div>
     </div>
   );

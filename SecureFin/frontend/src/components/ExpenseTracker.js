@@ -4,6 +4,8 @@ import '../styles/ExpenseTracker.css';
 
 function ExpenseTracker() {
   const [expenses, setExpenses] = useState([]);
+  const [budgets, setBudgets] = useState([]);
+  const [budgetAlert, setBudgetAlert] = useState(null);
   const [formData, setFormData] = useState({
     amount: '',
     category: 'food',
@@ -14,6 +16,7 @@ function ExpenseTracker() {
 
   useEffect(() => {
     fetchExpenses();
+    fetchBudgets();
   }, []);
 
   const fetchExpenses = async () => {
@@ -28,12 +31,59 @@ function ExpenseTracker() {
     }
   };
 
+  const fetchBudgets = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await axios.get('http://localhost:5000/api/budget/all', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      setBudgets(response.data);
+    } catch (error) {
+      console.error('Error fetching budgets:', error);
+    }
+  };
+
+  const checkBudgetAlert = (category, amount) => {
+    const budget = budgets.find(b => b.category === category);
+    if (!budget) return null;
+
+    const newTotal = budget.spent + parseFloat(amount);
+    const percentage = (newTotal / budget.limit) * 100;
+
+    if (percentage > 100) {
+      return {
+        type: 'critical',
+        message: `⚠️ CRITICAL: Adding ₹${amount} will exceed your ${category} budget by ₹${(newTotal - budget.limit).toFixed(0)}!`,
+      };
+    } else if (percentage > 80) {
+      return {
+        type: 'warning',
+        message: `⚠️ WARNING: Adding ₹${amount} will use ${percentage.toFixed(0)}% of your ${category} budget (₹${budget.limit})`,
+      };
+    } else if (percentage > 50) {
+      return {
+        type: 'info',
+        message: `ℹ️ INFO: You'll have used ${percentage.toFixed(0)}% of your ${category} budget after this expense.`,
+      };
+    }
+
+    return null;
+  };
+
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData({
       ...formData,
       [name]: value,
     });
+
+    // Check budget alert when amount or category changes
+    if ((name === 'amount' && value) || name === 'category') {
+      const amount = name === 'amount' ? value : formData.amount;
+      const category = name === 'category' ? value : formData.category;
+      const alert = checkBudgetAlert(category, amount);
+      setBudgetAlert(alert);
+    }
   };
 
   const handleAddExpense = async (e) => {
@@ -47,15 +97,20 @@ function ExpenseTracker() {
       });
 
       setExpenses([response.data, ...expenses]);
+      setBudgetAlert(null);
       setFormData({
         amount: '',
         category: 'food',
         description: '',
         paymentMethod: 'cash',
       });
+      
+      // Refresh budgets after adding expense
+      await fetchBudgets();
+      
       alert('Expense added successfully!');
     } catch (error) {
-      alert('Error adding expense: ' + error.response?.data?.error);
+      alert('Error adding expense: ' + (error.response?.data?.error || error.message));
     } finally {
       setLoading(false);
     }
@@ -67,6 +122,13 @@ function ExpenseTracker() {
 
       <div className="expense-form">
         <h2>Add New Expense</h2>
+        
+        {budgetAlert && (
+          <div className={`budget-alert alert-${budgetAlert.type}`}>
+            {budgetAlert.message}
+          </div>
+        )}
+
         <form onSubmit={handleAddExpense}>
           <input
             type="number"
