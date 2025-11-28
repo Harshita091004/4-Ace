@@ -22,9 +22,9 @@ function FinancialLiteracy() {
       const headers = { 'Authorization': `Bearer ${token}` };
 
       const [quizzesRes, articlesRes, progressRes] = await Promise.all([
-        axios.get('http://localhost:5000/api/literacy/quizzes', { headers }),
-        axios.get('http://localhost:5000/api/literacy/articles', { headers }),
-        axios.get('http://localhost:5000/api/literacy/progress', { headers }),
+        axios.get('http://localhost:5001/api/literacy/quizzes', { headers }),
+        axios.get('http://localhost:5001/api/literacy/articles', { headers }),
+        axios.get('http://localhost:5001/api/literacy/progress', { headers }),
       ]);
 
       setQuizzes(quizzesRes.data);
@@ -40,7 +40,7 @@ function FinancialLiteracy() {
   const startQuiz = async (quizId) => {
     try {
       const token = localStorage.getItem('token');
-      const response = await axios.get(`http://localhost:5000/api/literacy/quizzes/${quizId}`, {
+      const response = await axios.get(`http://localhost:5001/api/literacy/quizzes/${quizId}`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
 
@@ -63,7 +63,7 @@ function FinancialLiteracy() {
     try {
       const token = localStorage.getItem('token');
       const response = await axios.post(
-        `http://localhost:5000/api/literacy/quizzes/${selectedQuiz.id}/submit`,
+        `http://localhost:5001/api/literacy/quizzes/${selectedQuiz.id}/submit`,
         { answers },
         { headers: { 'Authorization': `Bearer ${token}` } }
       );

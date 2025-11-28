@@ -14,7 +14,7 @@ function FraudDetection() {
   const fetchFraudAlerts = async () => {
     try {
       const token = localStorage.getItem('token');
-      const response = await axios.get('http://localhost:5000/api/fraud/alerts', {
+      const response = await axios.get('http://localhost:5001/api/fraud/alerts', {
         headers: { 'Authorization': `Bearer ${token}` }
       });
 
@@ -30,7 +30,7 @@ function FraudDetection() {
   const reportFraud = async (transactionId) => {
     try {
       const token = localStorage.getItem('token');
-      await axios.post('http://localhost:5000/api/fraud/report', 
+      await axios.post('http://localhost:5001/api/fraud/report', 
         { transactionId, reason: 'User reported' },
         { headers: { 'Authorization': `Bearer ${token}` } }
       );

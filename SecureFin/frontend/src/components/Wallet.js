@@ -23,7 +23,7 @@ function Wallet() {
   const fetchWallet = async () => {
     try {
       const token = localStorage.getItem('token');
-      const response = await axios.get('http://localhost:5000/api/wallet/info', {
+      const response = await axios.get('http://localhost:5001/api/wallet/info', {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       setWallet(response.data);
@@ -42,7 +42,7 @@ function Wallet() {
   const createWallet = async () => {
     try {
       const token = localStorage.getItem('token');
-      const response = await axios.post('http://localhost:5000/api/wallet/create', {}, {
+      const response = await axios.post('http://localhost:5001/api/wallet/create', {}, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       setWallet(response.data);
@@ -70,7 +70,7 @@ function Wallet() {
 
     try {
       const token = localStorage.getItem('token');
-      const response = await axios.post('http://localhost:5000/api/wallet/transfer', formData, {
+      const response = await axios.post('http://localhost:5001/api/wallet/transfer', formData, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
 

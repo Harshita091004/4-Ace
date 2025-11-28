@@ -21,9 +21,9 @@ function Dashboard() {
       const headers = { 'Authorization': `Bearer ${token}` };
 
       const [expensesRes, budgetsRes, walletRes] = await Promise.all([
-        axios.get('http://localhost:5000/api/expenses/all', { headers }),
-        axios.get('http://localhost:5000/api/budget/all', { headers }),
-        axios.get('http://localhost:5000/api/wallet/info', { headers }).catch(() => ({ data: { balance: 0 } })),
+        axios.get('http://localhost:5001/api/expenses/all', { headers }),
+        axios.get('http://localhost:5001/api/budget/all', { headers }),
+        axios.get('http://localhost:5001/api/wallet/info', { headers }).catch(() => ({ data: { balance: 0 } })),
       ]);
 
       setExpenses(expensesRes.data.slice(0, 10));

@@ -22,7 +22,7 @@ function ExpenseTracker() {
   const fetchExpenses = async () => {
     try {
       const token = localStorage.getItem('token');
-      const response = await axios.get('http://localhost:5000/api/expenses/all', {
+      const response = await axios.get('http://localhost:5001/api/expenses/all', {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       setExpenses(response.data);
@@ -34,7 +34,7 @@ function ExpenseTracker() {
   const fetchBudgets = async () => {
     try {
       const token = localStorage.getItem('token');
-      const response = await axios.get('http://localhost:5000/api/budget/all', {
+      const response = await axios.get('http://localhost:5001/api/budget/all', {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       setBudgets(response.data);
@@ -92,7 +92,7 @@ function ExpenseTracker() {
 
     try {
       const token = localStorage.getItem('token');
-      const response = await axios.post('http://localhost:5000/api/expenses/add', formData, {
+      const response = await axios.post('http://localhost:5001/api/expenses/add', formData, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
 

@@ -1,0 +1,36 @@
+.anomaly-alert-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 2000;
+}
+
+.anomaly-alert-modal {
+  background: #fff;
+  border-radius: 10px;
+  padding: 22px;
+  width: 92%;
+  max-width: 520px;
+  box-shadow: 0 12px 40px rgba(0,0,0,0.3);
+}
+
+.anomaly-header { display:flex; gap:12px; align-items:center; border-bottom:1px solid #eee; padding-bottom:12px; }
+.risk-icon { font-size:28px; }
+.anomaly-list { margin-top:14px; max-height:260px; overflow:auto; }
+.anomaly-item { padding:10px; margin:8px 0; border-radius:8px; background:#fafafa; }
+.anomaly-item.severity-HIGH { background:#fdecea; border-left:4px solid #e74c3c; }
+.anomaly-item.severity-MEDIUM { background:#fff7e6; border-left:4px solid #f39c12; }
+.anomaly-item.severity-LOW { background:#eafaf0; border-left:4px solid #2ecc71; }
+
+.anomaly-actions { display:flex; gap:12px; margin-top:18px; }
+.btn-cancel, .btn-confirm { flex:1; padding:12px 14px; border-radius:8px; border:none; font-weight:600; cursor:pointer; }
+.btn-cancel { background:#95a5a6; color:#fff; }
+.btn-confirm { color:#fff; box-shadow:0 6px 18px rgba(0,0,0,0.15); }
+
+@media (max-width:480px){ .anomaly-alert-modal{ padding:16px } }

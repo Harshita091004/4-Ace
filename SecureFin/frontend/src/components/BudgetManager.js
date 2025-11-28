@@ -17,7 +17,7 @@ function BudgetManager() {
   const fetchBudgets = async () => {
     try {
       const token = localStorage.getItem('token');
-      const response = await axios.get('http://localhost:5000/api/budget/all', {
+      const response = await axios.get('http://localhost:5001/api/budget/all', {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       setBudgets(response.data);
@@ -46,7 +46,7 @@ function BudgetManager() {
 
     try {
       const token = localStorage.getItem('token');
-      const response = await axios.post('http://localhost:5000/api/budget/set', formData, {
+      const response = await axios.post('http://localhost:5001/api/budget/set', formData, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
 
