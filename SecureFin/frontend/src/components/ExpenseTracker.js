@@ -107,7 +107,14 @@ function ExpenseTracker() {
       
       // Refresh budgets after adding expense
       await fetchBudgets();
-      
+
+      // Notify other parts of the app (AI insights) that expenses changed
+      try {
+        window.dispatchEvent(new Event('expensesUpdated'));
+      } catch (e) {
+        // ignore in non-browser environments
+      }
+
       alert('Expense added successfully!');
     } catch (error) {
       alert('Error adding expense: ' + (error.response?.data?.error || error.message));

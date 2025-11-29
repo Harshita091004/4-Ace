@@ -45,6 +45,12 @@ function Navbar({ user, currentView, onViewChange, onLogout }) {
         >
           Learn
         </button>
+        <button
+          className={`nav-link ${currentView === 'ai-insights' ? 'active' : ''}`}
+          onClick={() => onViewChange('ai-insights')}
+        >
+          🤖 AI Insights
+        </button>
       </div>
 
       <div className="navbar-user">

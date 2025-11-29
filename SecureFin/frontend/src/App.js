@@ -9,6 +9,7 @@ import BudgetManager from './components/BudgetManager';
 import Wallet from './components/Wallet';
 import FraudDetection from './components/FraudDetection';
 import FinancialLiteracy from './components/FinancialLiteracy';
+import AIRecommendations from './components/AIRecommendations';
 import Navbar from './components/Navbar';
 
 function App() {
@@ -70,6 +71,7 @@ function App() {
         {currentView === 'wallet' && <Wallet />}
         {currentView === 'fraud' && <FraudDetection />}
         {currentView === 'literacy' && <FinancialLiteracy />}
+        {currentView === 'ai-insights' && <AIRecommendations />}
       </main>
     </div>
   );
