@@ -1,0 +1,236 @@
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.0;
+
+/**
+ * @title SecureFin Transaction Logger
+ * @dev Stores immutable financial transaction records on blockchain
+ */
+contract SecureFinTransactions {
+    
+    struct Transaction {
+        address user;
+        string category;
+        uint256 amount;
+        uint256 timestamp;
+        string transactionType; // "income" or "expense"
+        bool isVerified;
+    }
+    
+    // Mapping from transaction ID to Transaction
+    mapping(bytes32 => Transaction) public transactions;
+    
+    // Mapping from user address to their transaction IDs
+    mapping(address => bytes32[]) public userTransactions;
+    
+    // Events
+    event TransactionLogged(
+        bytes32 indexed txId,
+        address indexed user,
+        string category,
+        uint256 amount,
+        string transactionType
+    );
+    
+    event TransactionVerified(bytes32 indexed txId, address indexed verifier);
+    
+    // Modifiers
+    modifier onlyTransactionOwner(bytes32 txId) {
+        require(transactions[txId].user == msg.sender, "Not transaction owner");
+        _;
+    }
+    
+    /**
+     * @dev Log a new transaction on the blockchain
+     * @param category The category of the transaction (e.g., "Food", "Education")
+     * @param amount The amount in smallest unit (e.g., paise for INR)
+     * @param transactionType Either "income" or "expense"
+     * @return txId The unique transaction identifier
+     */
+    function logTransaction(
+        string memory category,
+        uint256 amount,
+        string memory transactionType
+    ) public returns (bytes32) {
+        // Generate unique transaction ID
+        bytes32 txId = keccak256(
+            abi.encodePacked(
+                msg.sender,
+                category,
+                amount,
+                block.timestamp,
+                userTransactions[msg.sender].length
+            )
+        );
+        
+        // Create and store transaction
+        transactions[txId] = Transaction({
+            user: msg.sender,
+            category: category,
+            amount: amount,
+            timestamp: block.timestamp,
+            transactionType: transactionType,
+            isVerified: false
+        });
+        
+        // Add to user's transaction list
+        userTransactions[msg.sender].push(txId);
+        
+        emit TransactionLogged(txId, msg.sender, category, amount, transactionType);
+        
+        return txId;
+    }
+    
+    /**
+     * @dev Verify a transaction (can be extended to multi-sig verification)
+     * @param txId The transaction ID to verify
+     */
+    function verifyTransaction(bytes32 txId) public onlyTransactionOwner(txId) {
+        require(!transactions[txId].isVerified, "Already verified");
+        
+        transactions[txId].isVerified = true;
+        
+        emit TransactionVerified(txId, msg.sender);
+    }
+    
+    /**
+     * @dev Get all transaction IDs for a user
+     * @param user The user's address
+     * @return txIds Array of transaction IDs
+     */
+    function getUserTransactions(address user) public view returns (bytes32[] memory txIds) {
+        txIds = userTransactions[user];
+        return txIds;
+    }
+    
+    /**
+     * @dev Get transaction details
+     * @param txId The transaction ID
+     * @return  details All transaction details
+     */
+    function getTransaction(bytes32 txId) public view returns (
+        address user,
+        string memory category,
+        uint256 amount,
+        uint256 timestamp,
+        string memory transactionType,
+        bool isVerified
+    ) {
+        Transaction memory txn = transactions[txId];
+        return (
+            txn.user,
+            txn.category,
+            txn.amount,
+            txn.timestamp,
+            txn.transactionType,
+            txn.isVerified
+        );
+    }
+    
+    /**
+     * @dev Calculate total spending in a category for a user
+     * @param user The user's address
+     * @param category The category to calculate
+     * @return total Total amount spent in the category
+     */
+    function getCategoryTotal(address user, string memory category)
+        public
+        view
+        returns (uint256 total)
+    {
+        bytes32[] memory txIds = userTransactions[user];
+        total = 0;
+
+        for (uint i = 0; i < txIds.length; i++) {
+            Transaction memory txn = transactions[txIds[i]];
+            if (
+                keccak256(abi.encodePacked(txn.category)) ==
+                keccak256(abi.encodePacked(category)) &&
+                keccak256(abi.encodePacked(txn.transactionType)) ==
+                keccak256(abi.encodePacked("expense"))
+            ) {
+                total += txn.amount;
+            }
+        }
+
+        return total;
+    }
+    
+    /**
+     * @dev Get transaction count for a user
+     * @param user The user's address
+     * @return count Number of transactions
+     */
+    function getTransactionCount(address user) public view returns (uint256 count) {
+        count = userTransactions[user].length;
+        return count;
+    }
+    
+    /**
+     * @dev Check if an amount exceeds fraud threshold
+     * @param amount The transaction amount
+     * @return isPotentialFraud Whether it's potentially fraudulent
+     */
+    function checkFraudThreshold(uint256 amount) public pure returns (bool isPotentialFraud) {
+        // Simple threshold check (200000 paise = 2000 INR)
+        isPotentialFraud = amount > 200000;
+        return isPotentialFraud;
+    }
+}
+
+/**
+ * @title SecureFin Wallet
+ * @dev Simple wallet for peer-to-peer transactions
+ */
+contract SecureFinWallet {
+    
+    mapping(address => uint256) public balances;
+    
+    event Deposit(address indexed user, uint256 amount);
+    event Transfer(address indexed from, address indexed to, uint256 amount);
+    event Withdrawal(address indexed user, uint256 amount);
+    
+    /**
+     * @dev Deposit funds into wallet
+     */
+    function deposit() public payable {
+        balances[msg.sender] += msg.value;
+        emit Deposit(msg.sender, msg.value);
+    }
+    
+    /**
+     * @dev Transfer funds to another user
+     * @param to Recipient address
+     * @param amount Amount to transfer
+     */
+    function transfer(address to, uint256 amount) public {
+        require(balances[msg.sender] >= amount, "Insufficient balance");
+        require(to != address(0), "Invalid recipient");
+        
+        balances[msg.sender] -= amount;
+        balances[to] += amount;
+        
+        emit Transfer(msg.sender, to, amount);
+    }
+    
+    /**
+     * @dev Withdraw funds from wallet
+     * @param amount Amount to withdraw
+     */
+    function withdraw(uint256 amount) public {
+        require(balances[msg.sender] >= amount, "Insufficient balance");
+        
+        balances[msg.sender] -= amount;
+        payable(msg.sender).transfer(amount);
+        
+        emit Withdrawal(msg.sender, amount);
+    }
+    
+    /**
+     * @dev Get wallet balance
+     * @param user The user's address
+     * @return The balance
+     */
+    function getBalance(address user) public view returns (uint256) {
+        return balances[user];
+    }
+}
